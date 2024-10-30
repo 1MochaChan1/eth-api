@@ -6,6 +6,10 @@ __pycache__/
 # C extensions
 *.so
 
+# Custom
+lambda_function.zip
+*.ipynb
+
 # Distribution / packaging
 .Python
 build/
@@ -125,6 +129,7 @@ celerybeat.pid
 .env
 .venv
 env/
+.env/
 venv/
 ENV/
 env.bak/
