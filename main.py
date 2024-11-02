@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from mangum import Mangum
-from trading_data import Trading
+from trading_data import get_current_day, get_rth
 
 
 app = FastAPI()
@@ -13,7 +13,7 @@ def get_root():
 @app.get("/curr_day/{code}")
 def read_item(code:str):
     if(code=="12345"):
-        res = Trading.get_current_day()
+        res = get_current_day()
         return res
     else:
         return {'err': 'Something went wrong'}
@@ -21,7 +21,7 @@ def read_item(code:str):
 @app.get("/rth_day/{code}")
 def read_item(code:str):
     if(code=="12345"):
-        res = Trading.get_rth()
+        res = get_rth()
         return res
     else:
         return {'err': 'Something went wrong'}
@@ -29,7 +29,7 @@ def read_item(code:str):
 @app.get("/rth_day_4/{code}")
 def read_item(code:str):
     if(code=="12345"):
-        res = Trading.get_rth("10:00:00", "14:00:00")
+        res = get_rth("10:00:00", "14:00:00")
         return res
     else:
         return {'err': 'Something went wrong'}
