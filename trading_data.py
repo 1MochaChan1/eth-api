@@ -14,9 +14,8 @@ def to_utc_ny(datetime):
 
     return datetime.astimezone(ny_zone)  
 
-def get_current_day():
+def get_current_day(symb:str="MNQ=F"):
     """Fetch the current day's OHLC data for MNQ futures and return specific metrics."""
-    symb = "MNQ=F"  
 
 
     # Get symbol OHLC data
@@ -56,17 +55,16 @@ def get_current_day():
     return res  
 
 
-def get_rth(start_date:str='09:30:00', end_date:str='16:30:00'):
+def get_rth(start_time:str='09:30:00', end_time:str='16:30:00', symb:str="MNQ=F"):
     # GET DATA FROM API
-    symb = "MNQ=F"
     data = yf.download(symb, period='1d', interval='1m')
     data = data.reset_index()
     temp = pd.DataFrame(data)
     
     # GET DATA SLICE FROM TIME A to B
     temp['Datetime'] = temp['Datetime'].apply(lambda x: to_utc_ny(x))
-    start_time = pd.to_datetime(start_date).time()
-    end_time = pd.to_datetime(end_date).time()
+    start_time = pd.to_datetime(start_time).time()
+    end_time = pd.to_datetime(end_time).time()
     df = temp[temp['Datetime'].dt.time.between(start_time, end_time)]
     
     # INSTANTIATE RESPONSE and FIND BULLISH BEARISH
