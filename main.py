@@ -23,5 +23,5 @@ def read_item(symbol:str):
 
 @app.get("/rth_day_4/{symbol}")
 def read_item(symbol:str):
-    res = get_rth(start_time="10:00:00", end_time="14:00:00", symb=symbol)
+    res = get_rth(str_start_time="10:00:00", str_end_time="14:00:00", symb=symbol)
     return res

@@ -20,7 +20,7 @@ def to_utc_ny(datetime):
 def get_current_day(symb:str="MNQ=F"):
     """Fetch the current day's OHLC data for MNQ futures and return specific metrics."""
     # Get Trading Day starting from yesterday's 18:00
-    data = _get_data(symb)
+    data = _get_data(symb, offset=True)
 
     df = pd.DataFrame(data)
     df['Datetime'] = df['Datetime'].apply(lambda x: to_utc_ny(x))
@@ -28,22 +28,17 @@ def get_current_day(symb:str="MNQ=F"):
     return _find_highest(df)
 
 
-def get_rth(str_strt:str='09:30:00', str_end:str='16:30:00', symb:str="MNQ=F"):
+def get_rth(str_start_time:str='09:30:00', str_end_time:str='16:30:00', symb:str="MNQ=F"):
     
     # GET DATA FROM API
     data = _get_data(symb)
     temp = pd.DataFrame(data)
     
+    start_time = pd.to_datetime(str_start_time).time()
+    end_time = pd.to_datetime(str_end_time).time()
+    
     # GET DATA SLICE FROM TIME A to B
     temp['Datetime'] = temp['Datetime'].apply(lambda x: to_utc_ny(x))
-    
-    pt_strt = datetime.strptime(str_strt, "%H:%M:%S")
-    pt_end = datetime.strptime(str_end, "%H:%M:%S")
-
-    temp_date = datetime.now(tz=pytz.timezone('America/New_York'))
-    start_time = temp_date.replace(hour=pt_strt.hour, minute=pt_strt.min, second=0)
-    end_time = temp_date.replace(hour=pt_end.hour, minute=pt_end.min, second=0)
-    
     df = temp[temp['Datetime'].dt.time.between(start_time, end_time)]
     
     # INSTANTIATE RESPONSE and FIND BULLISH BEARISH
@@ -60,13 +55,12 @@ def _find_highest(df:pd.DataFrame):
     if (float(o.item()) > float(c.item())): bullish = False
 
     res = {
-        'Date':df.iloc[0].Datetime.item().strftime('%Y-%m-%d'),
+        'Date':df.iloc[-1].Datetime.item().strftime('%Y-%m-%d'),
         'OHLC (HOD)':None,
         'OHLC (LOD)':None,
         'OLHC (HOD)':None,
         'OLHC (LOD)':None,
     }
-
 
     # GET HIGHEST AND LOWEST IN THE SLICE
     max = df['High'].idxmax()
@@ -80,12 +74,18 @@ def _find_highest(df:pd.DataFrame):
         res['OHLC (LOD)'] = df.loc[min,'Datetime'].item().strftime('%H:%M:%S')
     return res
 
-def _get_data(symb):
-    end_time = datetime.now(tz=pytz.timezone('America/New_York'))
-    start_time = end_time - timedelta(days=1)  # Go back one day
-    start_time = start_time.replace(hour=18, minute=0, second=0, microsecond=0)
+
+def _get_data(symb, offset:bool=False):
+   
 
     # Get symbol OHLC data
-    data = yf.download(symb, start=start_time, end=end_time, interval='1m')
-    data = data.reset_index()
+    if(offset):
+        end_time = datetime.now(tz=pytz.timezone('America/New_York'))
+        start_time = end_time - timedelta(days=1)  # Go back one day
+        start_time = start_time.replace(hour=18, minute=0, second=0, microsecond=0)
+        data = yf.download(symb, start=start_time, end=end_time, interval='1m')
+        data = data.reset_index()
+    else:
+        data = yf.download(symb, period='1d', interval='1m')
+        data = data.reset_index()
     return data
